@@ -36,7 +36,6 @@ Once this is fixed, or I figure out where I went wrong, I'll be able to
 uncomment this code.
 =====================================================================================
 
-
 var delayed = {
     echo: function(data, delay) {
         var promise = process.Promise();
@@ -48,13 +47,10 @@ var delayed = {
     
     add: function(first, second, delay) {
         var promise = process.Promise();
-        if(1) {
-            return first + second;
-        }
         setTimeout(function() {
             promise.emitSuccess(first + second);
         }, delay);
-        return promise;
+        return first + second;
     }
 }
 

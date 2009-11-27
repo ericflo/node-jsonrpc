@@ -28,6 +28,6 @@ client.call('delayed.add', [1, 1, 1000], function(result) {
     sys.puts(result);
 });
 
-client.call('delayed.multiply', [5, 5, 500], function(result) {
+client.call('delayed.echo', ['Echo.', 500], function(result) {
     sys.puts(result);
 });*/
