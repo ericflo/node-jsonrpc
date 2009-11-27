@@ -1,0 +1,29 @@
+This is a JSON-RPC server and client library for node.js <http://nodejs.org/>,
+the V8 based evented IO framework.
+
+Firing up an efficient JSON-RPC server becomes extremely simple:
+
+    var rpc = require('jsonrpc');
+    
+    function add(first, second) {
+        return first + second;
+    }
+    rpc.expose('add', add);
+    
+    rpc.listen(8000, 'localhost');
+
+
+And creating a client to speak to that server is easy too:
+
+    var rpc = require('jsonrpc');
+    
+    var client = rpc.getClient(8000, 'localhost');
+    
+    client.call('add', [1, 2], function(result) {
+        sys.puts('1 + 2 = ' + result);
+    });
+
+To learn more, see the examples directory, peruse test/jsonrpc-test.js, or
+simply "Use The Source, Luke".
+
+More documentation and development is on its way.
