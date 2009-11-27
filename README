@@ -16,6 +16,7 @@ Firing up an efficient JSON-RPC server becomes extremely simple:
 And creating a client to speak to that server is easy too:
 
     var rpc = require('jsonrpc');
+    var sys = require('sys');
     
     var client = rpc.getClient(8000, 'localhost');
     
