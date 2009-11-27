@@ -23,22 +23,11 @@ rpc.exposeModule('math', math);
 /* Listen on port 8000 */
 rpc.listen(8000, 'localhost');
 
-/* 
-=====================================================================================
-NOTE
-=====================================================================================
-Right now creating process.Promise objects inside of these callback functions
-somehow causes node.js to bail with this error:
-
-"V8 FATAL ERROR. v8::Object::SetInternalField() Writing internal field out of bounds"
-
-Once this is fixed, or I figure out where I went wrong, I'll be able to
-uncomment this code.
-=====================================================================================
-
+/* By returning a promise, we can delay our response indefinitely, leaving the
+   request hanging until the promise emits success. */
 var delayed = {
     echo: function(data, delay) {
-        var promise = process.Promise();
+        var promise = new process.Promise();
         setTimeout(function() {
             promise.emitSuccess(data);
         }, delay);
@@ -46,13 +35,12 @@ var delayed = {
     },
     
     add: function(first, second, delay) {
-        var promise = process.Promise();
+        var promise = new process.Promise();
         setTimeout(function() {
             promise.emitSuccess(first + second);
         }, delay);
-        return first + second;
+        return promise;
     }
 }
 
 rpc.exposeModule('delayed', delayed);
-*/

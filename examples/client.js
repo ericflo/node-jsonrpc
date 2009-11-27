@@ -22,12 +22,11 @@ promise.addCallback(function(result) {
     sys.puts('  1 + 1 = ' + result + ', dummy!');
 });
 
-/* THESE DON'T WORK YET, SEE NOTES IN <examples/server.js>
-
-client.call('delayed.add', [1, 1, 1000], function(result) {
+/* These calls should each take 1.5 seconds to complete. */
+client.call('delayed.add', [1, 1, 1500], function(result) {
     sys.puts(result);
 });
 
-client.call('delayed.echo', ['Echo.', 500], function(result) {
+client.call('delayed.echo', ['Echo.', 1500], function(result) {
     sys.puts(result);
-});*/
+});
