@@ -10,9 +10,9 @@ var JSONRPCClient = function(port, host) {
     this.port = port;
     this.host = host;
     
-    var client = http.createClient(port, host);
-    
     this.call = function(method, params, callback, errback, path) {
+        var client = http.createClient(port, host);
+        
         // First we encode the request into JSON
         var requestJSON = JSON.stringify({
             'id': '' + (new Date()).getTime(),
