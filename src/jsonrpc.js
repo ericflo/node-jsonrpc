@@ -6,9 +6,11 @@ var functions = {};
 var METHOD_NOT_ALLOWED = "Method Not Allowed\n";
 var INVALID_REQUEST = "Invalid Request\n";
 
-var JSONRPCClient = function(port, host) {
+var JSONRPCClient = function(port, host, user, password) {
     this.port = port;
     this.host = host;
+    this.user = user;
+    this.password = password;
     
     this.call = function(method, params, callback, errback, path) {
         var client = http.createClient(port, host);
@@ -19,44 +21,46 @@ var JSONRPCClient = function(port, host) {
             'method': method,
             'params': params
         });
-        // Then we build some basic headers.
-        var headers = {
-            'host': host,
-            'Content-Length': requestJSON.length
+        
+        var headers = {};
+
+        if (user && password) {
+            console.log(this.user, this.password);
+            var buff = new Buffer(this.user + ":" + this.password).toString('base64');
+            var auth = 'Basic ' + buff;
+            headers['Authorization'] = auth;
         }
-        // We will be returning a Promise for when this result completes, so
-        // we first need to instantiate it.
-        var promise = new process.Promise();
+
+        // Then we build some basic headers.
+        headers['Host'] = host;
+        headers['Content-Length'] = requestJSON.length;
+
+        console.log(requestJSON);
+
         // Now we'll make a request to the server
-        var request = client.post(path || '/', headers);
-        request.sendBody(requestJSON);
-        request.finish(function(response) {
+        var request = client.request('POST', path || '/', headers);
+        request.write(requestJSON);
+        request.on('response', function(response) {
             // We need to buffer the response chunks in a nonblocking way.
             var buffer = '';
-            response.addListener('body', function(chunk) {
+            response.on('data', function(chunk) {
                 buffer = buffer + chunk;
             });
             // When all the responses are finished, we decode the JSON and
             // depending on whether it's got a result or an error, we call
             // emitSuccess or emitError on the promise.
-            response.addListener('complete', function() {
+            response.on('end', function() {
                 var decoded = JSON.parse(buffer);
                 if(decoded.hasOwnProperty('result')) {
-                    promise.emitSuccess(decoded.result);
+                    if (callback)
+                      callback(decoded.result);
                 }
                 else {
-                    promise.emitError(decoded.error);
+                    if (errback)
+                      errback(decoded.error);
                 }
             });
         });
-        // If a callback was passed, we politely attach it to the promise.
-        if(callback) {
-            promise.addCallback(callback);
-        }
-        if(errback) {
-            promise.addErrback(errback);
-        }
-        return promise;
     };
 }
 
@@ -92,9 +96,9 @@ var JSONRPC = {
     },
     
     handleInvalidRequest: function(req, res) {
-        res.sendHeader(400, [['Content-Type', 'text/plain'],
-                             ['Content-Length', INVALID_REQUEST.length]]);
-        res.sendBody(INVALID_REQUEST);
+        res.writeHead(400, {'Content-Type': 'text/plain',
+                            'Content-Length': INVALID_REQUEST.length});
+        res.write(INVALID_REQUEST);
         res.finish();
     },
     
@@ -122,9 +126,9 @@ var JSONRPC = {
                     'error': null,
                     'id': decoded.id
                 });
-                res.sendHeader(200, [['Content-Type', 'application/json'],
-                                     ['Content-Length', encoded.length]]);
-                res.sendBody(encoded);
+                res.writeHead(200, {'Content-Type': 'application/json',
+                                    'Content-Length': encoded.length});
+                res.write(encoded);
                 res.finish();
             };
             
@@ -136,9 +140,9 @@ var JSONRPC = {
                     'error': failure || 'Unspecified Failure',
                     'id': decoded.id
                 });
-                res.sendHeader(200, [['Content-Type', 'application/json'],
-                                     ['Content-Length', encoded.length]]);
-                res.sendBody(encoded);
+                res.writeHead(200, {'Content-Type': 'application/json',
+                                    'Content-Length': encoded.length});
+                res.write(encoded);
                 res.finish();
             };
             
@@ -174,10 +178,10 @@ var JSONRPC = {
     },
     
     handleNonPOST: function(req, res) {
-        res.sendHeader(405, [['Content-Type', 'text/plain'],
-                             ['Content-Length', METHOD_NOT_ALLOWED.length],
-                             ['Allow', 'POST']]);
-        res.sendBody(METHOD_NOT_ALLOWED);
+        res.writeHead(405, {'Content-Type': 'text/plain',
+                            'Content-Length': METHOD_NOT_ALLOWED.length,
+                            'Allow': 'POST'});
+        res.write(METHOD_NOT_ALLOWED);
         res.finish();
     },
     
@@ -196,9 +200,9 @@ var JSONRPC = {
         JSONRPC.handleRequest(req, res);
     }),
     
-    getClient: function(port, host) {
-        return new JSONRPCClient(port, host);
+    getClient: function(port, host, user, password) {
+        return new JSONRPCClient(port, host, user, password);
     }
 };
 
-process.mixin(exports, JSONRPC);
+module.exports = JSONRPC;
