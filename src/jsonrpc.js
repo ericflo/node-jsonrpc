@@ -25,7 +25,6 @@ var JSONRPCClient = function(port, host, user, password) {
         var headers = {};
 
         if (user && password) {
-            console.log(this.user, this.password);
             var buff = new Buffer(this.user + ":" + this.password).toString('base64');
             var auth = 'Basic ' + buff;
             headers['Authorization'] = auth;
@@ -34,8 +33,6 @@ var JSONRPCClient = function(port, host, user, password) {
         // Then we build some basic headers.
         headers['Host'] = host;
         headers['Content-Length'] = requestJSON.length;
-
-        console.log(requestJSON);
 
         // Now we'll make a request to the server
         var request = client.request('POST', path || '/', headers);
