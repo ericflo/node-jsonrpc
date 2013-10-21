@@ -3,6 +3,7 @@ the V8 based evented IO framework.
 
 Firing up an efficient JSON-RPC server becomes extremely simple:
 
+```javascript
     var rpc = require('jsonrpc');
     
     function add(first, second) {
@@ -11,10 +12,11 @@ Firing up an efficient JSON-RPC server becomes extremely simple:
     rpc.expose('add', add);
     
     rpc.listen(8000, 'localhost');
-
+```
 
 And creating a client to speak to that server is easy too:
 
+```javascript
     var rpc = require('jsonrpc');
     var sys = require('sys');
     
@@ -23,6 +25,7 @@ And creating a client to speak to that server is easy too:
     client.call('add', [1, 2], function(result) {
         sys.puts('1 + 2 = ' + result);
     });
+```
 
 To learn more, see the examples directory, peruse test/jsonrpc-test.js, or
 simply "Use The Source, Luke".
